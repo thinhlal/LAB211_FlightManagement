@@ -1,11 +1,10 @@
 package controller;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import model.Flight;
+import model.Passenger;
 
 public class FlightManagementSystem {
 
@@ -93,5 +92,40 @@ public class FlightManagementSystem {
 
     public void addNewFlight() {
         listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), createDepartureTime(), createArrivalTime(), createSeatAvailable()));
+    }
+    
+    private void showList(List<Flight> list){
+        for (Flight flight : list) {
+            System.out.println(flight.toString());
+        }
+    }
+    
+    public List availableFlightBaseOnDepartureAndArrival(){
+        List<Flight> listAvailableFlight = new ArrayList<>();
+        String destinationCity = createDestinationCity();
+        String startTime = createDepartureTime();
+        String endTime = createArrivalTime();
+        for (Flight flight : listFlight) {
+            if(flight.getDestinationCity().equalsIgnoreCase(destinationCity) && flight.getDepartureTime().equalsIgnoreCase(startTime) && flight.getArrivalTime().equalsIgnoreCase(endTime)){
+                listAvailableFlight.add(flight);
+            }
+        }
+        return listAvailableFlight;
+    }
+    
+    public void makeReservation(){
+        System.out.print("Enter Your Name: ");
+        String passengerName = sc.nextLine().trim();
+        System.out.print("Enter Contact Details: ");
+        String contactDetails = sc.nextLine().trim();
+        showList(availableFlightBaseOnDepartureAndArrival());
+        System.out.print("Enter Flight Number to Reserve: ");
+        String flightNumber = sc.nextLine().trim();
+        for (Flight flight : listFlight) {
+            if (flight.getFlightNumber().equalsIgnoreCase(flightNumber)) {
+                Passenger passenger = new Passenger(passengerName, contactDetails);
+                break;
+            }
+        }
     }
 }
