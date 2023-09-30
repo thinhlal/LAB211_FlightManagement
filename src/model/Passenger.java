@@ -1,6 +1,8 @@
 package model;
 
 public class Passenger {
+
+    private int seatNumber;
     private String name;
     private String contactDetails;
 
@@ -25,9 +27,17 @@ public class Passenger {
         this.contactDetails = contactDetails;
     }
 
+    public int getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(int seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
     @Override
     public String toString() {
         return name + "_" + contactDetails;
     }
-    
+
 }

@@ -8,6 +8,7 @@ public class Flight {
     private String departureTime;
     private String arrivalTime;
     private String availableSeats;
+    private int countSeatAvailable = 0;
 
     public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, String availableSeats) {
         this.flightNumber = flightNumber;
@@ -16,6 +17,7 @@ public class Flight {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.availableSeats = availableSeats;
+        ++countSeatAvailable;
     }
 
     public String getFlightNumber() {
@@ -65,7 +67,16 @@ public class Flight {
     public void setAvailableSeats(String availableSeats) {
         this.availableSeats = availableSeats;
     }
-
+    public void decreaseSeatAvailable(){
+        countSeatAvailable--;
+    }
+    public boolean checkSeatAvailable(){
+        if(countSeatAvailable == 0){
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public String toString() {
         return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + availableSeats;
