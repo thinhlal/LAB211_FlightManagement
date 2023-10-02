@@ -3,6 +3,7 @@ package controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import model.Flight;
@@ -15,7 +16,7 @@ public class FlightManagementSystem {
     List<Flight> listFlight = new ArrayList<>();
     List<Passenger> listPassenger = new ArrayList<>();
     List<Reservations> listReservations = new ArrayList<>();
-    HashMap<Reservations, Integer> seatNumber = new HashMap<>();
+    Map<Integer, Boolean> listSeat = new HashMap<>();
 
     private boolean askToBackToEnterAgain() {
         System.out.print("Do you want to type again?(Y/N): ");
@@ -172,20 +173,30 @@ public class FlightManagementSystem {
         }
         return false;
     }
-    private void allocateForAllReservation(){
-        int i = 0;
-        for (Reservations reservation : listReservations) {
-            seatNumber.put(reservation, ++i);
-        }
-    }
-    public int getSeatNumber(Reservations reservation) {
-        allocateForAllReservation();
-        for (Entry<Reservations, Integer> entry : seatNumber.entrySet()) {
-            if(entry.getKey().getReservationID().equalsIgnoreCase(reservation.getReservationID())){
-                return entry.getValue();
+
+    public void displaySeatAllSeat(Flight flight) {
+        System.out.println("All Seat for Flight " + flight.getFlightNumber() + ":");
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+            int seatNumber = entry.getKey();
+            boolean isAvailable = entry.getValue();
+            if (isAvailable) {
+                System.out.println("Seat " + seatNumber + " is available.");
+            } else {
+                System.out.println("Seat " + seatNumber + " is not available.");
             }
         }
-        return -1;
+    }
+    public void setAllSeatToAvailable(Flight flight) {
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+            entry.setValue(false);
+        }
+    }
+    
+    public boolean isSeatAvailable(Flight flight, int seatNumber) {
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        return seatMap.getOrDefault(seatNumber, false);
     }
 
 }

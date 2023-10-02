@@ -1,6 +1,8 @@
 
 package model;
 
+import java.util.Map;
+
 public class Flight {
     private String flightNumber;
     private String departureCity;
@@ -9,6 +11,7 @@ public class Flight {
     private String arrivalTime;
     private String availableSeats;
     private int countSeatAvailable = 0;
+    private Map<Integer, Boolean> seatMap; 
 
     public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, String availableSeats) {
         this.flightNumber = flightNumber;
@@ -19,7 +22,16 @@ public class Flight {
         this.availableSeats = availableSeats;
         ++countSeatAvailable;
     }
+    
+    public Map<Integer, Boolean> getSeatMap() {
+        return seatMap;
+    }
 
+    public void setSeatMap(Map<Integer, Boolean> seatMap) {
+        this.seatMap = seatMap;
+    }
+
+    
     public String getFlightNumber() {
         return flightNumber;
     }
