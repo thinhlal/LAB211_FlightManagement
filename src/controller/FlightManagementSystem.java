@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import model.Flight;
 import model.Passenger;
@@ -174,6 +173,30 @@ public class FlightManagementSystem {
         return false;
     }
 
+    private void limitSeat(int limit, Flight flight) {
+        int maxSeat[] = new int[limit];
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        //Limit seat example 40 seats
+        int i = 0;
+        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+            Integer key = entry.getKey();
+            if (i < maxSeat.length) {
+                key = i++;
+            }
+        }
+        flight.setSeatMap(seatMap);
+    }
+
+    /*
+    public void setAllSeatToAvailable(Flight flight) {
+        limitSeat(40, flight);
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+            entry.setValue(false);
+        }
+        flight.setSeatMap(seatMap);
+    }
+     */
     public void displaySeatAllSeat(Flight flight) {
         System.out.println("All Seat for Flight " + flight.getFlightNumber() + ":");
         Map<Integer, Boolean> seatMap = flight.getSeatMap();
@@ -187,13 +210,19 @@ public class FlightManagementSystem {
             }
         }
     }
-    public void setAllSeatToAvailable(Flight flight) {
+
+    public boolean selectSeatIfSeatAvailable(Flight flight, int seatNumber) {
         Map<Integer, Boolean> seatMap = flight.getSeatMap();
         for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-            entry.setValue(false);
+            Integer seat = entry.getKey();
+            Boolean isAvailable = entry.getValue();
+            if(seatNumber == seat && isAvailable){
+                return true;
+            }
         }
+        return false;
     }
-    
+
     public boolean isSeatAvailable(Flight flight, int seatNumber) {
         Map<Integer, Boolean> seatMap = flight.getSeatMap();
         return seatMap.getOrDefault(seatNumber, false);
