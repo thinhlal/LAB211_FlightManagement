@@ -15,11 +15,13 @@ public class FlightManagementSystem {
     List<Flight> listFlight = new ArrayList<>();
     List<Passenger> listPassenger = new ArrayList<>();
     List<Reservations> listReservations = new ArrayList<>();
-    Map<Integer, Boolean> listSeat = new HashMap<>();
+    Map<Integer, Boolean> listSeat;
+    Map<Reservations, Map<Integer, Boolean>> listSeatWithPassenger;
 
     private boolean askToBackToEnterAgain() {
         System.out.print("Do you want to type again?(Y/N): ");
-        return sc.nextLine().trim().equalsIgnoreCase("Y");
+        String string = sc.nextLine().trim();
+        return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("Yes");
     }
 
     private String createFlightNumber() {
@@ -119,31 +121,30 @@ public class FlightManagementSystem {
         return listAvailableFlight;
     }
 
-    public void makeReservation() {
-        System.out.print("Enter Your Name: ");
-        String passengerName = sc.nextLine().trim();
-        System.out.print("Enter Contact Details: ");
-        String contactDetails = sc.nextLine().trim();
+    public boolean makeReservation(String passengerName, String contactDetails, String flightNumberToFound) {
+//        System.out.print("Enter Your Name: ");
+//        String passengerName = sc.nextLine().trim();
+//        System.out.print("Enter Contact Details: ");
+//        String contactDetails = sc.nextLine().trim();
+//        System.out.print("Enter Flight Number to Reserve: ");
+//        String flightNumber = sc.nextLine().trim();
         showList(availableFlightBaseOnDepartureAndArrival());
-        System.out.print("Enter Flight Number to Reserve: ");
-        String flightNumber = sc.nextLine().trim();
         for (Flight flight : listFlight) {
-            if (flight.getFlightNumber().equalsIgnoreCase(flightNumber)) {
-                Passenger passenger = new Passenger(passengerName, contactDetails);
-                if (flight.checkSeatAvailable()) {
-                    String reservationID = "VN" + Reservations.countReservation++;
-                    flight.decreaseSeatAvailable();
+            if (Reservations.countReservationAndSeat < limitSeat(400)) {
+                if (flight.getFlightNumber().equalsIgnoreCase(flightNumberToFound)) {
+                    Passenger passenger = new Passenger(passengerName, contactDetails);
+                    String reservationID = "VN" + Reservations.incReservationID++;
                     Reservations r = new Reservations(reservationID, passenger, flight);
                     listReservations.add(r);
                     System.out.println("Reservation Successful!");
                     System.out.println("Reservation ID: " + reservationID);
-                } else {
-                    System.out.println("No available seats for the selected flight.");
+                    return true;
                 }
             } else {
-                System.out.println("Flight not found. Please enter a valid flight number.");
+                System.out.println("The flight was full of seats.");
             }
         }
+        return false;
     }
 
     private Reservations findReservationByID(String reservationString) {
@@ -164,28 +165,68 @@ public class FlightManagementSystem {
             System.out.println("Boarding Pass:");
             System.out.println("Passenger Name: " + passenger.getName());
             System.out.println("Contact Details: " + passenger.getContactDetails());
-            System.out.println("Flight Details:");
+            System.out.print("Flight Details:");
             System.out.println(flight.toString());
-            System.out.println("Seat Number: " + getSeatNumber(reservationByID));
+            displayAllSeat(flight);
+
+            Map<Integer, Boolean> seatMap = flight.getSeatMap();
+            String choose;
+            System.out.print("You want to choose seat(Y/N): ");
+            choose = sc.nextLine().trim();
+            if (choose.equalsIgnoreCase("Y") || choose.equalsIgnoreCase("yes")) {
+                while (true) {
+                    System.out.print("Enter seat number you want to seat: ");
+                    int seatNumber = Integer.parseInt(sc.nextLine());
+                    if (selectSeatIfSeatAvailable(flight, seatNumber)) {
+                        reservationByID.setSeatNumber(seatNumber);
+                        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                            Integer key = entry.getKey();
+                            if (key == seatNumber) {
+                                entry.setValue(true);
+                                break;
+                            }
+                        }
+                        break;
+                    } else {
+                        System.out.println("Seat is not available. Enter again or not");
+                        if (!askToBackToEnterAgain()) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                    Integer key = entry.getKey();
+                    boolean isAvai = entry.getValue();
+                    if (!isAvai) {
+                        entry.setValue(true);
+                        reservationByID.setSeatNumber(key);
+                    }
+                }
+            }
             System.out.println("Check-in Successful!");
             return true;
         }
         return false;
     }
 
-    private void limitSeat(int limit, Flight flight) {
-        int maxSeat[] = new int[limit];
-        Map<Integer, Boolean> seatMap = flight.getSeatMap();
-        //Limit seat example 40 seats
-        int i = 0;
-        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-            Integer key = entry.getKey();
-            if (i < maxSeat.length) {
-                key = i++;
-            }
-        }
-        flight.setSeatMap(seatMap);
-    }
+//    private void limitSeat(int limit, Flight flight) {
+//        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+//        int i = 1;
+//        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+//            if (Flight.countSeatAvailable < limit) {
+//                Integer key = entry.getKey();
+//                Boolean value = entry.getValue();
+//                if (i <= limit) {
+//                    key = i;
+//                    i++;
+//                }
+//            } else {
+//                System.out.println("Out of limit");
+//            }
+//        }
+//        flight.setSeatMap(seatMap);
+//    }
 
     /*
     public void setAllSeatToAvailable(Flight flight) {
@@ -197,7 +238,11 @@ public class FlightManagementSystem {
         flight.setSeatMap(seatMap);
     }
      */
-    public void displaySeatAllSeat(Flight flight) {
+    private int limitSeat(int limit) {
+        return limit;
+    }
+
+    public void displayAllSeat(Flight flight) {
         System.out.println("All Seat for Flight " + flight.getFlightNumber() + ":");
         Map<Integer, Boolean> seatMap = flight.getSeatMap();
         for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
@@ -216,7 +261,7 @@ public class FlightManagementSystem {
         for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
             Integer seat = entry.getKey();
             Boolean isAvailable = entry.getValue();
-            if(seatNumber == seat && isAvailable){
+            if (seatNumber == seat && isAvailable) {
                 return true;
             }
         }

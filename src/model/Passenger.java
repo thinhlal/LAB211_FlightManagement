@@ -1,7 +1,6 @@
 package model;
 
 public class Passenger {
-
     private int seatNumber;
     private String name;
     private String contactDetails;

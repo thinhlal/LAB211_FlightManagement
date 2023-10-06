@@ -10,7 +10,6 @@ public class Flight {
     private String departureTime;
     private String arrivalTime;
     private String availableSeats;
-    private int countSeatAvailable = 0;
     private Map<Integer, Boolean> seatMap; 
 
     public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, String availableSeats) {
@@ -20,7 +19,6 @@ public class Flight {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.availableSeats = availableSeats;
-        ++countSeatAvailable;
     }
     
     public Map<Integer, Boolean> getSeatMap() {
@@ -78,15 +76,6 @@ public class Flight {
 
     public void setAvailableSeats(String availableSeats) {
         this.availableSeats = availableSeats;
-    }
-    public void decreaseSeatAvailable(){
-        countSeatAvailable--;
-    }
-    public boolean checkSeatAvailable(){
-        if(countSeatAvailable == 0){
-            return false;
-        }
-        return true;
     }
     
     @Override
