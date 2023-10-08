@@ -1,6 +1,8 @@
 package controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Scanner;
 import model.Flight;
 import model.Passenger;
 import model.Reservations;
+import model.Utils;
 
 public class FlightManagementSystem {
 
@@ -31,7 +34,7 @@ public class FlightManagementSystem {
             if (flightNumber.matches("^F\\d{4}$")) {
                 return flightNumber;
             } else {
-                System.out.println("must be follow as: Fxyzt, with xyzt is a number and no spaces");
+                System.out.println("Must be follow as: Fxyzt, with xyzt is a number and no spaces");
                 if (!askToBackToEnterAgain()) {
                     break;
                 }
@@ -46,7 +49,7 @@ public class FlightManagementSystem {
     }
 
     private boolean isValidTime(String time) {
-        if (time.matches("^(?:(?:(?:19|20)\\d\\d)-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01]) (?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d)$")) {
+        if (time.matches("^\\d\\d\\d\\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9])$")) {
             return true;
         }
         return false;
@@ -61,7 +64,7 @@ public class FlightManagementSystem {
         String time;
         while (true) {
             System.out.print("Departure time: ");
-            time = sc.nextLine();
+            time = sc.nextLine().trim();
             if (isValidTime(time)) {
                 break;
             } else {
@@ -79,7 +82,7 @@ public class FlightManagementSystem {
         String time;
         while (true) {
             System.out.print("Arrival time: ");
-            time = sc.nextLine();
+            time = sc.nextLine().trim();
             if (isValidTime(time)) {
                 break;
             } else {
@@ -92,20 +95,33 @@ public class FlightManagementSystem {
         }
         return time;
     }
-
+    private boolean isDepartureTimeBeforeArrivalTime() {
+        String departureTime,arrivalTime;
+        departureTime = createDepartureTime();
+        arrivalTime = createArrivalTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        
+        try {
+            Date departureDate = dateFormat.parse(departureTime);
+            Date arrivalDate = dateFormat.parse(arrivalTime);
+            return departureDate.before(arrivalDate);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     private String createSeatAvailable() {
         System.out.print("Seat available: ");
         return sc.nextLine().trim();
     }
 
-    public void addNewFlight() {
-        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), createDepartureTime(), createArrivalTime(), createSeatAvailable()));
+    private int createMaxSeat() {
+        int maxSeat = Utils.getInt("Max seat of flight: ");
+        return maxSeat;
     }
 
-    private void showList(List<Flight> list) {
-        for (Flight flight : list) {
-            System.out.println(flight.toString());
-        }
+    public void addNewFlight() {
+        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), createDepartureTime(), createArrivalTime(), createSeatAvailable(), createMaxSeat()));
     }
 
     public List availableFlightBaseOnDepartureAndArrival() {
@@ -114,11 +130,23 @@ public class FlightManagementSystem {
         String startTime = createDepartureTime();
         String endTime = createArrivalTime();
         for (Flight flight : listFlight) {
-            if (flight.getDestinationCity().equalsIgnoreCase(destinationCity) && flight.getDepartureTime().equalsIgnoreCase(startTime) && flight.getArrivalTime().equalsIgnoreCase(endTime)) {
+            if (flight.getDestinationCity() != null
+                && flight.getDepartureTime() != null
+                && flight.getArrivalTime() != null
+                && flight.getDestinationCity().equalsIgnoreCase(destinationCity)
+                && flight.getDepartureTime().equalsIgnoreCase(startTime)
+                && flight.getArrivalTime().equalsIgnoreCase(endTime)) 
+            {
                 listAvailableFlight.add(flight);
             }
         }
         return listAvailableFlight;
+    }
+
+    private void showList(List<Flight> list) {
+        for (Flight flight : list) {
+            System.out.println(flight.toString());
+        }
     }
 
     public boolean makeReservation(String passengerName, String contactDetails, String flightNumberToFound) {
@@ -130,7 +158,7 @@ public class FlightManagementSystem {
 //        String flightNumber = sc.nextLine().trim();
         showList(availableFlightBaseOnDepartureAndArrival());
         for (Flight flight : listFlight) {
-            if (Reservations.countReservationAndSeat < limitSeat(400)) {
+            if (flight.getCountSeat() <= flight.getMaxSeat()) {
                 if (flight.getFlightNumber().equalsIgnoreCase(flightNumberToFound)) {
                     Passenger passenger = new Passenger(passengerName, contactDetails);
                     String reservationID = "VN" + Reservations.incReservationID++;
@@ -138,10 +166,13 @@ public class FlightManagementSystem {
                     listReservations.add(r);
                     System.out.println("Reservation Successful!");
                     System.out.println("Reservation ID: " + reservationID);
+                    int incSeat = flight.getCountSeat();
+                    flight.setCountSeat(++incSeat);
                     return true;
                 }
             } else {
                 System.out.println("The flight was full of seats.");
+                return false;
             }
         }
         return false;
@@ -208,38 +239,6 @@ public class FlightManagementSystem {
             return true;
         }
         return false;
-    }
-
-//    private void limitSeat(int limit, Flight flight) {
-//        Map<Integer, Boolean> seatMap = flight.getSeatMap();
-//        int i = 1;
-//        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-//            if (Flight.countSeatAvailable < limit) {
-//                Integer key = entry.getKey();
-//                Boolean value = entry.getValue();
-//                if (i <= limit) {
-//                    key = i;
-//                    i++;
-//                }
-//            } else {
-//                System.out.println("Out of limit");
-//            }
-//        }
-//        flight.setSeatMap(seatMap);
-//    }
-
-    /*
-    public void setAllSeatToAvailable(Flight flight) {
-        limitSeat(40, flight);
-        Map<Integer, Boolean> seatMap = flight.getSeatMap();
-        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-            entry.setValue(false);
-        }
-        flight.setSeatMap(seatMap);
-    }
-     */
-    private int limitSeat(int limit) {
-        return limit;
     }
 
     public void displayAllSeat(Flight flight) {

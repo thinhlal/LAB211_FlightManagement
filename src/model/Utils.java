@@ -48,7 +48,7 @@ public class Utils {
                 check = false;
             } catch (Exception e) {
                 check = true;
-                System.out.println("Input number!!!");
+                System.out.println("Input wrong type number!!!");
             }
         } while (check);
         return number;
@@ -63,7 +63,7 @@ public class Utils {
                 number = Double.parseDouble(sc.nextLine());
                 check = false;
             } catch (Exception e) {
-                System.out.println("Input number!!!");
+                System.out.println("Input wrong type number!!!");
                 check = true;
             }
         } while (check);
@@ -85,7 +85,7 @@ public class Utils {
                 }
 
             } catch (Exception e) {
-                System.out.println("Input number!!!");
+                System.out.println("Input wrong type number!!!");
             }
         } while (check || number < min);
         return number;
@@ -106,7 +106,7 @@ public class Utils {
                 }
 
             } catch (Exception e) {
-                System.out.println("Input number!!!");
+                System.out.println("Input wrong type number!!!");
             }
         } while (check || number < min);
         return number;

@@ -4,23 +4,41 @@ package model;
 import java.util.Map;
 
 public class Flight {
+    private int countSeat = 0;
     private String flightNumber;
     private String departureCity;
     private String destinationCity;
     private String departureTime;
     private String arrivalTime;
     private String availableSeats;
-    private Map<Integer, Boolean> seatMap; 
+    private Map<Integer, Boolean> seatMap;
+    private int maxSeat;
 
-    public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, String availableSeats) {
+    public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, String availableSeats, int maxSeat) {
         this.flightNumber = flightNumber;
         this.departureCity = departureCity;
         this.destinationCity = destinationCity;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.availableSeats = availableSeats;
+        this.maxSeat = maxSeat;
     }
-    
+
+    public int getCountSeat() {
+        return countSeat;
+    }
+
+    public void setCountSeat(int countSeat) {
+        this.countSeat = countSeat;
+    }
+
+    public int getMaxSeat() {
+        return maxSeat;
+    }
+
+    public void setMaxSeat(int maxSeat) {
+        this.maxSeat = maxSeat;
+    }
     public Map<Integer, Boolean> getSeatMap() {
         return seatMap;
     }
