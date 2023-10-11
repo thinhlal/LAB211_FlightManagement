@@ -48,6 +48,11 @@ public class FlightManagementSystem {
         return sc.nextLine().trim();
     }
 
+    private String createDestinationCity() {
+        System.out.print("Destination city: ");
+        return sc.nextLine().trim();
+    }
+
     private boolean isValidTime(String time) {
         if (time.matches("^\\d\\d\\d\\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9]):([0-9]|[0-5][0-9])$")) {
             return true;
@@ -55,15 +60,10 @@ public class FlightManagementSystem {
         return false;
     }
 
-    private String createDestinationCity() {
-        System.out.print("Destination city: ");
-        return sc.nextLine().trim();
-    }
-
     private String createDepartureTime() {
         String time;
         while (true) {
-            System.out.print("Departure time: ");
+            System.out.print("Departure time(yyyy-MM-dd HH:mm:ss): ");
             time = sc.nextLine().trim();
             if (isValidTime(time)) {
                 break;
@@ -78,29 +78,11 @@ public class FlightManagementSystem {
         return time;
     }
 
-    private String createArrivalTime() {
-        String time;
-        while (true) {
-            System.out.print("Arrival time: ");
-            time = sc.nextLine().trim();
-            if (isValidTime(time)) {
-                break;
-            } else {
-                System.out.println("Not valid time");
-                if (!askToBackToEnterAgain()) {
-                    time = null;
-                    break;
-                }
-            }
-        }
-        return time;
-    }
-    private boolean isDepartureTimeBeforeArrivalTime() {
-        String departureTime,arrivalTime;
-        departureTime = createDepartureTime();
-        arrivalTime = createArrivalTime();
+    private boolean isArrivalAfterDeparture(String departureTime, String arrivalTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
+        if (departureTime == null) {
+            return true;
+        }
         try {
             Date departureDate = dateFormat.parse(departureTime);
             Date arrivalDate = dateFormat.parse(arrivalTime);
@@ -109,7 +91,25 @@ public class FlightManagementSystem {
             return false;
         }
     }
-    
+
+    private String createArrivalTime(String departureTime) {
+        String time;
+        while (true) {
+            System.out.print("Arrival time(yyyy-MM-dd HH:mm:ss): ");
+            time = sc.nextLine().trim();
+            if (isValidTime(time) && isArrivalAfterDeparture(departureTime, time)) {
+                break;
+            } else {
+                System.out.println("Not valid time");
+                if (!askToBackToEnterAgain()) {
+                    time = null;
+                    break;
+                }
+            }
+        }
+        return time;
+    }
+
     private String createSeatAvailable() {
         System.out.print("Seat available: ");
         return sc.nextLine().trim();
@@ -121,29 +121,31 @@ public class FlightManagementSystem {
     }
 
     public void addNewFlight() {
-        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), createDepartureTime(), createArrivalTime(), createSeatAvailable(), createMaxSeat()));
+        String departureTime = createDepartureTime();
+        String arrivalTime = createArrivalTime(departureTime);
+        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), departureTime, arrivalTime, createSeatAvailable(), createMaxSeat()));
     }
 
-    public List availableFlightBaseOnDepartureAndArrival() {
+    public List<Flight> availableFlightBaseOnDepartureAndArrival() {
         List<Flight> listAvailableFlight = new ArrayList<>();
+        String arrivalCity = createDepartureCity();
         String destinationCity = createDestinationCity();
-        String startTime = createDepartureTime();
-        String endTime = createArrivalTime();
+        System.out.print("Start day: ");
+        String startDay = sc.nextLine().trim();
         for (Flight flight : listFlight) {
             if (flight.getDestinationCity() != null
-                && flight.getDepartureTime() != null
-                && flight.getArrivalTime() != null
-                && flight.getDestinationCity().equalsIgnoreCase(destinationCity)
-                && flight.getDepartureTime().equalsIgnoreCase(startTime)
-                && flight.getArrivalTime().equalsIgnoreCase(endTime)) 
-            {
+                    && flight.getDepartureTime() != null
+                    && flight.getArrivalTime() != null
+                    && flight.getDestinationCity().equalsIgnoreCase(destinationCity)
+                    && flight.getDepartureTime().equalsIgnoreCase(startTime)
+                    && flight.getArrivalTime().equalsIgnoreCase(endTime)) {
                 listAvailableFlight.add(flight);
             }
         }
         return listAvailableFlight;
     }
 
-    private void showList(List<Flight> list) {
+    public void showList(List<Flight> list) {
         for (Flight flight : list) {
             System.out.println(flight.toString());
         }
