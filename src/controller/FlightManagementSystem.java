@@ -60,6 +60,13 @@ public class FlightManagementSystem {
         return false;
     }
 
+    private boolean isValidDate(String date) {
+        if (date.matches("^\\d\\d\\d\\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$")) {
+            return true;
+        }
+        return false;
+    }
+
     private String createDepartureTime() {
         String time;
         while (true) {
@@ -68,11 +75,7 @@ public class FlightManagementSystem {
             if (isValidTime(time)) {
                 break;
             } else {
-                System.out.println("Not valid time");
-                if (!askToBackToEnterAgain()) {
-                    time = null;
-                    break;
-                }
+                System.out.println("Not valid time. Do again");
             }
         }
         return time;
@@ -100,19 +103,10 @@ public class FlightManagementSystem {
             if (isValidTime(time) && isArrivalAfterDeparture(departureTime, time)) {
                 break;
             } else {
-                System.out.println("Not valid time");
-                if (!askToBackToEnterAgain()) {
-                    time = null;
-                    break;
-                }
+                System.out.println("Not valid time. Do again");
             }
         }
         return time;
-    }
-
-    private String createSeatAvailable() {
-        System.out.print("Seat available: ");
-        return sc.nextLine().trim();
     }
 
     private int createMaxSeat() {
@@ -123,22 +117,34 @@ public class FlightManagementSystem {
     public void addNewFlight() {
         String departureTime = createDepartureTime();
         String arrivalTime = createArrivalTime(departureTime);
-        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), departureTime, arrivalTime, createSeatAvailable(), createMaxSeat()));
+        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), departureTime, arrivalTime, createMaxSeat()));
+    }
+
+    private String createValidDate() {
+        while (true) {
+            System.out.print("Start day(yyyy-MM-dd): ");
+            String startDay = sc.nextLine().trim();
+            if (!isValidDate(startDay)) {
+                System.out.println("You input wrong type date. Input again");
+            } else {
+                return startDay;
+            }
+        }
+    }
+
+    private String getStartDayOfFlight(Flight flight) {
+        String day[] = flight.getDepartureTime().split("\\s+");
+        return day[0];
     }
 
     public List<Flight> availableFlightBaseOnDepartureAndArrival() {
         List<Flight> listAvailableFlight = new ArrayList<>();
         String arrivalCity = createDepartureCity();
         String destinationCity = createDestinationCity();
-        System.out.print("Start day: ");
-        String startDay = sc.nextLine().trim();
+        String startDay = createValidDate();
         for (Flight flight : listFlight) {
-            if (flight.getDestinationCity() != null
-                    && flight.getDepartureTime() != null
-                    && flight.getArrivalTime() != null
-                    && flight.getDestinationCity().equalsIgnoreCase(destinationCity)
-                    && flight.getDepartureTime().equalsIgnoreCase(startTime)
-                    && flight.getArrivalTime().equalsIgnoreCase(endTime)) {
+            if (flight.getDestinationCity().equalsIgnoreCase(destinationCity)
+                    && startDay.equalsIgnoreCase(getStartDayOfFlight(flight))) {
                 listAvailableFlight.add(flight);
             }
         }
@@ -160,16 +166,18 @@ public class FlightManagementSystem {
 //        String flightNumber = sc.nextLine().trim();
         showList(availableFlightBaseOnDepartureAndArrival());
         for (Flight flight : listFlight) {
-            if (flight.getCountSeat() <= flight.getMaxSeat()) {
+            if (flight.getAvailableSeats() > 0) {
                 if (flight.getFlightNumber().equalsIgnoreCase(flightNumberToFound)) {
+                    int incCntSeat = flight.getCountSeat();
+                    flight.setCountSeat(++incCntSeat);
+                    int fightAvailableDecs = flight.getAvailableSeats();
+                    flight.setAvailableSeats(--fightAvailableDecs);
                     Passenger passenger = new Passenger(passengerName, contactDetails);
                     String reservationID = "VN" + Reservations.incReservationID++;
                     Reservations r = new Reservations(reservationID, passenger, flight);
                     listReservations.add(r);
                     System.out.println("Reservation Successful!");
                     System.out.println("Reservation ID: " + reservationID);
-                    int incSeat = flight.getCountSeat();
-                    flight.setCountSeat(++incSeat);
                     return true;
                 }
             } else {
