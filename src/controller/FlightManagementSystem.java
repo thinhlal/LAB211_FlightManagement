@@ -22,11 +22,19 @@ public class FlightManagementSystem {
     Map<Reservations, Map<Integer, Boolean>> listSeatWithPassenger;
 
     private boolean askToBackToEnterAgain() {
-        System.out.print("Do you want to type again?(Y/N): ");
+        System.out.print("Do you want to enter again?(Y/N): ");
         String string = sc.nextLine().trim();
-        return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("Yes");
+        return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("yes") || string.equalsIgnoreCase("ye");
     }
 
+    public boolean askToBackToMenu() {
+        System.out.print("Do you want to back to Main Menu(Y/N): ");
+        String string = sc.nextLine().trim();
+        return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("yes") || string.equalsIgnoreCase("ye");
+    }
+    private boolean chooseYesNo(String string){
+        return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("yes") || string.equalsIgnoreCase("ye");
+    }
     private String createFlightNumber() {
         while (true) {
             System.out.print("Flight number: ");
@@ -43,12 +51,12 @@ public class FlightManagementSystem {
         return null;
     }
 
-    private String createDepartureCity() {
+    public String createDepartureCity() {
         System.out.print("Departure city: ");
         return sc.nextLine().trim();
     }
 
-    private String createDestinationCity() {
+    public String createDestinationCity() {
         System.out.print("Destination city: ");
         return sc.nextLine().trim();
     }
@@ -67,7 +75,7 @@ public class FlightManagementSystem {
         return false;
     }
 
-    private String createDepartureTime() {
+    public String createDepartureTime() {
         String time;
         while (true) {
             System.out.print("Departure time(yyyy-MM-dd HH:mm:ss): ");
@@ -81,7 +89,7 @@ public class FlightManagementSystem {
         return time;
     }
 
-    private boolean isArrivalAfterDeparture(String departureTime, String arrivalTime) {
+    public boolean isArrivalAfterDeparture(String departureTime, String arrivalTime) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (departureTime == null) {
             return true;
@@ -95,7 +103,7 @@ public class FlightManagementSystem {
         }
     }
 
-    private String createArrivalTime(String departureTime) {
+    public String createArrivalTime(String departureTime) {
         String time;
         while (true) {
             System.out.print("Arrival time(yyyy-MM-dd HH:mm:ss): ");
@@ -120,7 +128,7 @@ public class FlightManagementSystem {
         listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), departureTime, arrivalTime, createMaxSeat()));
     }
 
-    private String createValidDate() {
+    public String createValidDate() {
         while (true) {
             System.out.print("Start day(yyyy-MM-dd): ");
             String startDay = sc.nextLine().trim();
@@ -137,13 +145,11 @@ public class FlightManagementSystem {
         return day[0];
     }
 
-    public List<Flight> availableFlightBaseOnDepartureAndArrival() {
+    public List<Flight> availableFlightBaseOnDepartureAndArrival(String departureCity, String destinationCity, String startDay) {
         List<Flight> listAvailableFlight = new ArrayList<>();
-        String arrivalCity = createDepartureCity();
-        String destinationCity = createDestinationCity();
-        String startDay = createValidDate();
         for (Flight flight : listFlight) {
             if (flight.getDestinationCity().equalsIgnoreCase(destinationCity)
+                    && flight.getDepartureCity().equalsIgnoreCase(departureCity)
                     && startDay.equalsIgnoreCase(getStartDayOfFlight(flight))) {
                 listAvailableFlight.add(flight);
             }
@@ -153,18 +159,11 @@ public class FlightManagementSystem {
 
     public void showList(List<Flight> list) {
         for (Flight flight : list) {
-            System.out.println(flight.toString());
+            flight.getInforOfFlight();
         }
     }
 
     public boolean makeReservation(String passengerName, String contactDetails, String flightNumberToFound) {
-//        System.out.print("Enter Your Name: ");
-//        String passengerName = sc.nextLine().trim();
-//        System.out.print("Enter Contact Details: ");
-//        String contactDetails = sc.nextLine().trim();
-//        System.out.print("Enter Flight Number to Reserve: ");
-//        String flightNumber = sc.nextLine().trim();
-        showList(availableFlightBaseOnDepartureAndArrival());
         for (Flight flight : listFlight) {
             if (flight.getAvailableSeats() > 0) {
                 if (flight.getFlightNumber().equalsIgnoreCase(flightNumberToFound)) {
@@ -195,60 +194,6 @@ public class FlightManagementSystem {
             }
         }
         return null;
-    }
-
-    public boolean checkInAndSeatAllocation(String providingID) {
-        Reservations reservationByID = findReservationByID(providingID);
-        if (reservationByID != null) {
-            Passenger passenger = reservationByID.getPassenger();
-            Flight flight = reservationByID.getFlight();
-            reservationByID.setIsCheckIn(true);
-            System.out.println("Boarding Pass:");
-            System.out.println("Passenger Name: " + passenger.getName());
-            System.out.println("Contact Details: " + passenger.getContactDetails());
-            System.out.print("Flight Details:");
-            System.out.println(flight.toString());
-            displayAllSeat(flight);
-
-            Map<Integer, Boolean> seatMap = flight.getSeatMap();
-            String choose;
-            System.out.print("You want to choose seat(Y/N): ");
-            choose = sc.nextLine().trim();
-            if (choose.equalsIgnoreCase("Y") || choose.equalsIgnoreCase("yes")) {
-                while (true) {
-                    System.out.print("Enter seat number you want to seat: ");
-                    int seatNumber = Integer.parseInt(sc.nextLine());
-                    if (selectSeatIfSeatAvailable(flight, seatNumber)) {
-                        reservationByID.setSeatNumber(seatNumber);
-                        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-                            Integer key = entry.getKey();
-                            if (key == seatNumber) {
-                                entry.setValue(true);
-                                break;
-                            }
-                        }
-                        break;
-                    } else {
-                        System.out.println("Seat is not available. Enter again or not");
-                        if (!askToBackToEnterAgain()) {
-                            break;
-                        }
-                    }
-                }
-            } else {
-                for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-                    Integer key = entry.getKey();
-                    boolean isAvai = entry.getValue();
-                    if (!isAvai) {
-                        entry.setValue(true);
-                        reservationByID.setSeatNumber(key);
-                    }
-                }
-            }
-            System.out.println("Check-in Successful!");
-            return true;
-        }
-        return false;
     }
 
     public void displayAllSeat(Flight flight) {
@@ -282,4 +227,57 @@ public class FlightManagementSystem {
         return seatMap.getOrDefault(seatNumber, false);
     }
 
+    public boolean checkInAndSeatAllocation(String providingID) {
+        Reservations reservationByID = findReservationByID(providingID);
+        if (reservationByID != null) {
+            Passenger passenger = reservationByID.getPassenger();
+            Flight flight = reservationByID.getFlight();
+            reservationByID.setIsCheckIn(true);
+            System.out.println("Boarding Pass:");
+            System.out.println("Passenger Name: " + passenger.getName());
+            System.out.println("Contact Details: " + passenger.getContactDetails());
+            System.out.print("Flight Details:");
+            flight.getInforOfFlightForPas();
+            displayAllSeat(flight);
+            Map<Integer, Boolean> seatMap = flight.getSeatMap();
+            String choose;
+            System.out.print("You want to choose seat(Y/N): ");
+            choose = sc.nextLine().trim();
+            if (chooseYesNo(choose)) {
+                while (true) {
+                    System.out.print("Enter seat number you want to seat: ");
+                    int selectSeatNumber = Integer.parseInt(sc.nextLine());
+                    if (selectSeatIfSeatAvailable(flight, selectSeatNumber)) {
+                        reservationByID.setSeatNumber(selectSeatNumber);
+                        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                            Integer key = entry.getKey();
+                            if (key == selectSeatNumber) {
+                                entry.setValue(true);
+                                break;
+                            }
+                        }
+                        break;
+                    } else {
+                        System.out.println("Seat is not available. Choose another seat or random");
+                        if (!askToBackToEnterAgain()) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                    Integer key = entry.getKey();
+                    boolean isAvai = entry.getValue();
+                    if (!isAvai) {
+                        entry.setValue(true);
+                        reservationByID.setSeatNumber(key);
+                        break;
+                    }
+                }
+            }
+            System.out.println("Check-in Successful!");
+            return true;
+        }
+        return false;
+    }
 }

@@ -1,7 +1,6 @@
 
 package model;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class Flight {
@@ -98,9 +97,15 @@ public class Flight {
         this.availableSeats = availableSeats;
     }
     
+    public void getInforOfFlight(){
+        System.out.println("FlightNumber: " + flightNumber + "_DepartureCity: " + departureCity + "_DestinationCity: " + destinationCity + "Start: " + departureTime + "_End: " + arrivalTime + "_Remaining seat: " + availableSeats + "_MaxseatofFlight: " + maxSeat);
+    }
+    public void getInforOfFlightForPas(){
+        System.out.println("FlightNumber: " + flightNumber + "_DepartureCity: " + departureCity + "_DestinationCity: " + destinationCity + "Start: " + departureTime + "_Remaining seat: " + availableSeats);
+    }
     @Override
     public String toString() {
-        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + availableSeats;
+        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + availableSeats + "_" + maxSeat;
     }
     
 }
