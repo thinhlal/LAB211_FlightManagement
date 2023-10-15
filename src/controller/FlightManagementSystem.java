@@ -1,9 +1,14 @@
 package controller;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,15 +16,20 @@ import model.Flight;
 import model.Passenger;
 import model.Reservations;
 import model.Utils;
+import model.Crew;
 
-public class FlightManagementSystem {
+public class FlightManagementSystem<E> {
+
+    private final String FILE_FLIGHTS = "flights.txt";
+    private final String FILE_PASSENGERS = "passengers.txt";
+    private final String FILE_RESERVATIONS = "reservations.txt";
+    private final String FILE_CREWS = "crewass.txt";
 
     Scanner sc = new Scanner(System.in);
     List<Flight> listFlight = new ArrayList<>();
-    List<Passenger> listPassenger = new ArrayList<>();
     List<Reservations> listReservations = new ArrayList<>();
-    Map<Integer, Boolean> listSeat;
-    Map<Reservations, Map<Integer, Boolean>> listSeatWithPassenger;
+    List<Passenger> listPassenger = new ArrayList<>();
+    List<Crew> listCrews = new ArrayList<>();
 
     private boolean askToBackToEnterAgain() {
         System.out.print("Do you want to enter again?(Y/N): ");
@@ -32,9 +42,11 @@ public class FlightManagementSystem {
         String string = sc.nextLine().trim();
         return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("yes") || string.equalsIgnoreCase("ye");
     }
-    private boolean chooseYesNo(String string){
+
+    public boolean chooseYesNo(String string) {
         return string.equalsIgnoreCase("Y") || string.equalsIgnoreCase("yes") || string.equalsIgnoreCase("ye");
     }
+
     private String createFlightNumber() {
         while (true) {
             System.out.print("Flight number: ");
@@ -43,12 +55,8 @@ public class FlightManagementSystem {
                 return flightNumber;
             } else {
                 System.out.println("Must be follow as: Fxyzt, with xyzt is a number and no spaces");
-                if (!askToBackToEnterAgain()) {
-                    break;
-                }
             }
         }
-        return null;
     }
 
     public String createDepartureCity() {
@@ -123,9 +131,12 @@ public class FlightManagementSystem {
     }
 
     public void addNewFlight() {
+        String createFlightNumber = createFlightNumber();
+        String createDepatureCity = createDepartureCity();
+        String createDestinationCity = createDestinationCity();
         String departureTime = createDepartureTime();
         String arrivalTime = createArrivalTime(departureTime);
-        listFlight.add(new Flight(createFlightNumber(), createDepartureCity(), createDestinationCity(), departureTime, arrivalTime, createMaxSeat()));
+        listFlight.add(new Flight(createFlightNumber, createDepatureCity, createDestinationCity, departureTime, arrivalTime, createMaxSeat()));
     }
 
     public String createValidDate() {
@@ -159,7 +170,7 @@ public class FlightManagementSystem {
 
     public void showList(List<Flight> list) {
         for (Flight flight : list) {
-            flight.getInforOfFlight();
+            flight.getInforOfFlightForPas();
         }
     }
 
@@ -172,15 +183,14 @@ public class FlightManagementSystem {
                     int fightAvailableDecs = flight.getAvailableSeats();
                     flight.setAvailableSeats(--fightAvailableDecs);
                     Passenger passenger = new Passenger(passengerName, contactDetails);
+                    listPassenger.add(passenger);
                     String reservationID = "VN" + Reservations.incReservationID++;
                     Reservations r = new Reservations(reservationID, passenger, flight);
                     listReservations.add(r);
-                    System.out.println("Reservation Successful!");
                     System.out.println("Reservation ID: " + reservationID);
                     return true;
                 }
             } else {
-                System.out.println("The flight was full of seats.");
                 return false;
             }
         }
@@ -222,62 +232,213 @@ public class FlightManagementSystem {
         return false;
     }
 
-    public boolean isSeatAvailable(Flight flight, int seatNumber) {
+    public void setAllSeatNumberToDefault(Flight flight) {
         Map<Integer, Boolean> seatMap = flight.getSeatMap();
-        return seatMap.getOrDefault(seatNumber, false);
+        for (Integer i = 0; i <= flight.getMaxSeat(); i++) {
+            seatMap.put(i, Boolean.TRUE);
+        }
+        flight.setSeatMap(seatMap);
     }
 
     public boolean checkInAndSeatAllocation(String providingID) {
+        if (findReservationByID(providingID) == null) {
+            return false;
+        }
         Reservations reservationByID = findReservationByID(providingID);
-        if (reservationByID != null) {
-            Passenger passenger = reservationByID.getPassenger();
-            Flight flight = reservationByID.getFlight();
-            reservationByID.setIsCheckIn(true);
-            System.out.println("Boarding Pass:");
-            System.out.println("Passenger Name: " + passenger.getName());
-            System.out.println("Contact Details: " + passenger.getContactDetails());
-            System.out.print("Flight Details:");
-            flight.getInforOfFlightForPas();
-            displayAllSeat(flight);
-            Map<Integer, Boolean> seatMap = flight.getSeatMap();
-            String choose;
-            System.out.print("You want to choose seat(Y/N): ");
-            choose = sc.nextLine().trim();
-            if (chooseYesNo(choose)) {
-                while (true) {
-                    System.out.print("Enter seat number you want to seat: ");
-                    int selectSeatNumber = Integer.parseInt(sc.nextLine());
-                    if (selectSeatIfSeatAvailable(flight, selectSeatNumber)) {
-                        reservationByID.setSeatNumber(selectSeatNumber);
-                        for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-                            Integer key = entry.getKey();
-                            if (key == selectSeatNumber) {
-                                entry.setValue(true);
-                                break;
-                            }
-                        }
-                        break;
-                    } else {
-                        System.out.println("Seat is not available. Choose another seat or random");
-                        if (!askToBackToEnterAgain()) {
-                            break;
+        if (reservationByID.isIsCheckIn()) {
+            return false;
+        }
+        Passenger passenger = reservationByID.getPassenger();
+        Flight flight = reservationByID.getFlight();
+        if (!flight.isIsAllocateAllSeat()) {
+            setAllSeatNumberToDefault(flight);
+            flight.setIsAllocateAllSeat(true);
+        }
+        reservationByID.setIsCheckIn(true);
+        System.out.println("Boarding Pass:");
+        System.out.println("Passenger Name: " + passenger.getName());
+        System.out.println("Contact Details: " + passenger.getContactDetails());
+        System.out.println("Flight Details:");
+        flight.getInforOfFlightForPas();
+        displayAllSeat(flight);
+        Map<Integer, Boolean> seatMap = flight.getSeatMap();
+        String choose;
+        System.out.print("You want to choose seat(Y/N): ");
+        choose = sc.nextLine().trim();
+        if (chooseYesNo(choose)) {
+            while (true) {
+                System.out.print("Enter seat number you want to seat: ");
+                int selectSeatNumber = Integer.parseInt(sc.nextLine());
+                if (selectSeatIfSeatAvailable(flight, selectSeatNumber)) {
+                    reservationByID.setSeatNumber(selectSeatNumber);
+                    passenger.setSeatNumber(selectSeatNumber);
+                    for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                        Integer key = entry.getKey();
+                        if (key == selectSeatNumber) {
+                            entry.setValue(false);
+                            return true;
                         }
                     }
-                }
-            } else {
-                for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
-                    Integer key = entry.getKey();
-                    boolean isAvai = entry.getValue();
-                    if (!isAvai) {
-                        entry.setValue(true);
-                        reservationByID.setSeatNumber(key);
+                } else {
+                    System.out.println("Seat is not available. Choose another seat or random");
+                    if (!askToBackToEnterAgain()) {
                         break;
                     }
                 }
             }
-            System.out.println("Check-in Successful!");
-            return true;
+        } else {
+            for (Map.Entry<Integer, Boolean> entry : seatMap.entrySet()) {
+                Integer key = entry.getKey();
+                boolean isAvai = entry.getValue();
+                if (isAvai) {
+                    entry.setValue(false);
+                    reservationByID.setSeatNumber(key);
+                    passenger.setSeatNumber(key);
+                    reservationByID.setIsCheckIn(true);
+                    return true;
+                }
+            }
+            return false;
         }
         return false;
+    }
+
+    public int saveToFileAfterIndex(String fileName, List list) {
+        int index = -1;
+        try {
+            FileReader file = new FileReader(fileName);
+            BufferedReader br = new BufferedReader(file);
+            String line;
+            while (true) {
+                line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).toString().equals(line)) {
+                        index = i + 1;
+                    }
+                }
+            }
+            br.close();
+            file.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return index;
+    }
+
+    public void saveFlightsToFile() {
+        try {
+            FileWriter fw = new FileWriter(FILE_FLIGHTS, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for (int i = 0; i < listFlight.size(); i++) {
+                if (i >= saveToFileAfterIndex(FILE_FLIGHTS, listFlight)) {
+                    pw.println(listFlight.get(i).writeToFile());
+                }
+            }
+            pw.flush();
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void savePassengersToFile() {
+        try {
+            FileWriter fw = new FileWriter(FILE_PASSENGERS, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for (int i = 0; i < listPassenger.size(); i++) {
+                if (i >= saveToFileAfterIndex(FILE_PASSENGERS, listPassenger)) {
+                    pw.println(listPassenger.get(i).writeToFile());
+                }
+            }
+            pw.flush();
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void saveRerservationsToFile() {
+        try {
+            FileWriter fw = new FileWriter(FILE_RESERVATIONS, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for (int i = 0; i < listReservations.size(); i++) {
+                if (i >= saveToFileAfterIndex(FILE_RESERVATIONS, listReservations)) {
+                    pw.println(listReservations.get(i).writeToFile());
+                }
+            }
+            pw.flush();
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void saveCrewsToFile() {
+        try {
+            FileWriter fw = new FileWriter(FILE_CREWS, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for (int i = 0; i < listCrews.size(); i++) {
+                if (i >= saveToFileAfterIndex(FILE_CREWS, listCrews)) {
+                    pw.println(listCrews.get(i).writeToFile());
+                }
+            }
+            pw.flush();
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private List addElementToListFromFile(String fileName, List<E> list, E e) {
+        try {
+            FileReader fr = new FileReader(fileName);
+            BufferedReader br = new BufferedReader(fr);
+            String line;
+            while (true) {
+                line = br.readLine().trim();
+                if (line == null) {
+                    break;
+                }
+                String words[] = line.split("_");
+
+                if (e instanceof Flight && fileName == FILE_FLIGHTS) {
+                    Flight flight = new Flight(words[0], words[1], words[2], words[3], words[4], Integer.parseInt(words[5]));
+                    list.add((E)flight);
+                } else if (e instanceof Passenger && fileName == FILE_PASSENGERS) {
+                    Passenger passenger = new Passenger(words[0], words[1], Integer.parseInt(words[3]));
+                    list.add((E)passenger);
+                } else if (e instanceof Reservations && fileName == FILE_RESERVATIONS) {
+                    Passenger p = new Passenger(line, FILE_CREWS)
+                    Reservations flight = new Reservations(words[0], words[1], words[2]);
+                    list.add((E)(Flight) flight);
+                } else if (e instanceof Crew && fileName == FILE_CREWS) {
+                }
+
+            }
+            br.close();
+            fr.close();
+        } catch (Exception a) {
+        }
+        return list;
+    }
+
+    public void printAllListFlightsFromFile() {
+        List<Flight> list = new ArrayList<>();
+
     }
 }

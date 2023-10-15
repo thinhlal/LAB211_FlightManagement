@@ -46,4 +46,7 @@ public class Crew {
         this.groundStaff = groundStaff;
     }
     
+    public String writeToFile() {
+        return null;
+    }
 }

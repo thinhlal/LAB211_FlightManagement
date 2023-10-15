@@ -1,9 +1,10 @@
-
 package model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Flight {
+
     private int countSeat;
     private String flightNumber;
     private String departureCity;
@@ -13,6 +14,7 @@ public class Flight {
     private int availableSeats;
     private Map<Integer, Boolean> seatMap;
     private int maxSeat;
+    private boolean isAllocateAllSeat;
 
     public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, int maxSeat) {
         this.flightNumber = flightNumber;
@@ -23,6 +25,16 @@ public class Flight {
         this.maxSeat = maxSeat;
         this.availableSeats = maxSeat;
         this.countSeat = 0;
+        seatMap = new HashMap<>();
+        isAllocateAllSeat = false;
+    }
+
+    public boolean isIsAllocateAllSeat() {
+        return isAllocateAllSeat;
+    }
+
+    public void setIsAllocateAllSeat(boolean isAllocateAllSeat) {
+        this.isAllocateAllSeat = isAllocateAllSeat;
     }
 
     public int getCountSeat() {
@@ -40,6 +52,7 @@ public class Flight {
     public void setMaxSeat(int maxSeat) {
         this.maxSeat = maxSeat;
     }
+
     public Map<Integer, Boolean> getSeatMap() {
         return seatMap;
     }
@@ -48,7 +61,6 @@ public class Flight {
         this.seatMap = seatMap;
     }
 
-    
     public String getFlightNumber() {
         return flightNumber;
     }
@@ -96,16 +108,22 @@ public class Flight {
     public void setAvailableSeats(int availableSeats) {
         this.availableSeats = availableSeats;
     }
-    
-    public void getInforOfFlight(){
-        System.out.println("FlightNumber: " + flightNumber + "_DepartureCity: " + departureCity + "_DestinationCity: " + destinationCity + "Start: " + departureTime + "_End: " + arrivalTime + "_Remaining seat: " + availableSeats + "_MaxseatofFlight: " + maxSeat);
+
+    public void getInforOfFlight() {
+        System.out.println("FlightNumber: " + flightNumber + " |DepartureCity: " + departureCity + " |DestinationCity: " + destinationCity + " |Time start: " + departureTime + " |End: " + arrivalTime + "|remaining seat: " + availableSeats + "|max seat of flight: " + maxSeat);
     }
-    public void getInforOfFlightForPas(){
-        System.out.println("FlightNumber: " + flightNumber + "_DepartureCity: " + departureCity + "_DestinationCity: " + destinationCity + "Start: " + departureTime + "_Remaining seat: " + availableSeats);
+
+    public void getInforOfFlightForPas() {
+        System.out.println("FlightNumber: " + flightNumber + " |DepartureCity: " + departureCity + " |DestinationCity: " + destinationCity + " |Time start: " + departureTime + " |Remaining seat: " + availableSeats);
     }
+
+    public String writeToFile() {
+        return "-Flight: " + flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + maxSeat;
+    }
+
     @Override
     public String toString() {
-        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + availableSeats + "_" + maxSeat;
+        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + maxSeat;
     }
-    
+
 }

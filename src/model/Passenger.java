@@ -10,6 +10,12 @@ public class Passenger {
         this.contactDetails = contactDetails;
     }
 
+    public Passenger(String name, String contactDetails, int seatNumber) {
+        this.seatNumber = seatNumber;
+        this.name = name;
+        this.contactDetails = contactDetails;
+    }
+
     public String getName() {
         return name;
     }
@@ -33,7 +39,10 @@ public class Passenger {
     public void setSeatNumber(int seatNumber) {
         this.seatNumber = seatNumber;
     }
-
+    public String writeToFile(){
+        return "-Passenger: " + name + "_" + contactDetails + seatNumber;
+    }
+    
     @Override
     public String toString() {
         return name + "_" + contactDetails;

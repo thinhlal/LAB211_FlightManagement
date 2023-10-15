@@ -1,16 +1,14 @@
 package model;
 
-import java.util.Map;
-
 public class Reservations {
 
     public static int countReservationAndSeat = 0;
     public static int incReservationID = 0;
-    private boolean isCheckIn;
     private String reservationID;
     private Passenger passenger;
     private Flight flight;
     private int seatNumber;
+    private boolean isCheckIn;
 
     public Reservations(String reservationID, Passenger passenger, Flight flight) {
         this.reservationID = reservationID;
@@ -19,6 +17,14 @@ public class Reservations {
         this.isCheckIn = false;
     }
 
+    public Reservations(String reservationID, Passenger passenger, Flight flight, int seatNumber, boolean isCheckIn) {
+        this.reservationID = reservationID;
+        this.passenger = passenger;
+        this.flight = flight;
+        this.seatNumber = seatNumber;
+        this.isCheckIn = isCheckIn;
+    }
+    
     public int getSeatNumber() {
         return seatNumber;
     }
@@ -57,6 +63,15 @@ public class Reservations {
 
     public void setFlight(Flight flight) {
         this.flight = flight;
+    }
+
+    public String writeToFile() {
+        return "-Reservation: " + reservationID + "_" + passenger.writeToFile() + "_" + flight.writeToFile() + "_" + isCheckIn;
+    }
+
+    @Override
+    public String toString() {
+        return reservationID + "_" + passenger + "_" + flight;
     }
 
 }
