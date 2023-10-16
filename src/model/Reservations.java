@@ -15,6 +15,7 @@ public class Reservations {
         this.passenger = passenger;
         this.flight = flight;
         this.isCheckIn = false;
+        this.seatNumber = -1;
     }
 
     public Reservations(String reservationID, Passenger passenger, Flight flight, int seatNumber, boolean isCheckIn) {
@@ -66,7 +67,7 @@ public class Reservations {
     }
 
     public String writeToFile() {
-        return "-Reservation: " + reservationID + "_" + passenger.writeToFile() + "_" + flight.writeToFile() + "_" + isCheckIn;
+        return reservationID + "|" + passenger.writeToFile() + "|" + flight.writeToFile() + "|" + seatNumber + "|" +isCheckIn;
     }
 
     @Override

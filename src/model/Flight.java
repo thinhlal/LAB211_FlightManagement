@@ -29,6 +29,16 @@ public class Flight {
         isAllocateAllSeat = false;
     }
 
+    public Flight(String flightNumber, String departureCity, String destinationCity, String departureTime, String arrivalTime, int availableSeats, int maxSeat) {
+        this.flightNumber = flightNumber;
+        this.departureCity = departureCity;
+        this.destinationCity = destinationCity;
+        this.departureTime = departureTime;
+        this.arrivalTime = arrivalTime;
+        this.availableSeats = availableSeats;
+        this.maxSeat = maxSeat;
+    }
+    
     public boolean isIsAllocateAllSeat() {
         return isAllocateAllSeat;
     }
@@ -118,7 +128,7 @@ public class Flight {
     }
 
     public String writeToFile() {
-        return "-Flight: " + flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + maxSeat;
+        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + maxSeat + "_"  + availableSeats;
     }
 
     @Override

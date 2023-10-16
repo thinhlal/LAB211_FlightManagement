@@ -85,19 +85,23 @@ public class FlightManagementView {
                         f.savePassengersToFile();
                         f.saveRerservationsToFile();
                         f.saveCrewsToFile();
+                        System.out.println("Save success");
                         if (f.askToBackToMenu()) {
                             break;
                         }
                     }
                 } else if (check == 6) {
                     while (true) {
-
+                        f.printAllListFlightsFromFile();
                         if (f.askToBackToMenu()) {
                             break;
                         }
                     }
                 } else {
-
+                    f.saveFlightsToFile();
+                    f.savePassengersToFile();
+                    f.saveRerservationsToFile();
+                    f.saveCrewsToFile();
                     break;
                 }
             } catch (Exception e) {

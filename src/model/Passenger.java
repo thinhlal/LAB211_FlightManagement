@@ -8,6 +8,7 @@ public class Passenger {
     public Passenger(String name, String contactDetails) {
         this.name = name;
         this.contactDetails = contactDetails;
+        this.seatNumber = -1;
     }
 
     public Passenger(String name, String contactDetails, int seatNumber) {
@@ -40,7 +41,7 @@ public class Passenger {
         this.seatNumber = seatNumber;
     }
     public String writeToFile(){
-        return "-Passenger: " + name + "_" + contactDetails + seatNumber;
+        return name + "_" + contactDetails + "_" + seatNumber;
     }
     
     @Override
