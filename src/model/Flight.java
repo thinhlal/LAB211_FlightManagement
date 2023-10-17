@@ -128,7 +128,7 @@ public class Flight {
     }
 
     public String writeToFile() {
-        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + maxSeat + "_"  + availableSeats;
+        return flightNumber + "_" + departureCity + "_" + destinationCity + "_" + departureTime + "_" + arrivalTime + "_" + availableSeats + "_" + maxSeat;
     }
 
     @Override

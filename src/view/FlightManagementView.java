@@ -97,6 +97,13 @@ public class FlightManagementView {
                             break;
                         }
                     }
+                } else if (check == 7) {
+                    while (true) {
+                        f.test("VN0|thinh_2123_-1|F1234_Tphcm_Ha Noi_2022-12-2 10:33:33_2022-12-2 10:34:34_5_4|-1|false");
+                        if (f.askToBackToMenu()) {
+                            break;
+                        }
+                    }
                 } else {
                     f.saveFlightsToFile();
                     f.savePassengersToFile();
